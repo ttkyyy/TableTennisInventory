@@ -1,0 +1,67 @@
+CREATE DATABASE TableTennisInventory;
+GO
+
+USE TableTennisInventory;
+GO
+
+CREATE TABLE Players (
+    Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    FullName NVARCHAR(100) NOT NULL,
+    Email NVARCHAR(255) NOT NULL,
+    Phone NVARCHAR(20),
+    BirthDate DATE,
+    IsActive BIT NOT NULL DEFAULT 1,
+    RegisteredAt DATETIME2 DEFAULT GETDATE(),
+    Rating DECIMAL(5, 2) DEFAULT 0.00
+);
+
+CREATE TABLE Categories (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Name NVARCHAR(50) NOT NULL UNIQUE,
+    Description NVARCHAR(255)
+);
+
+CREATE TABLE Rubbers (
+    Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    Name NVARCHAR(100) NOT NULL,
+    Brand NVARCHAR(50) NOT NULL,
+    Color NVARCHAR(20) NOT NULL,
+    Thickness DECIMAL(3, 1) NOT NULL,
+    Price MONEY NOT NULL,
+    IsInStock BIT NOT NULL DEFAULT 1,
+    CreatedAt DATETIME2 DEFAULT GETDATE()
+);
+
+CREATE TABLE Rackets (
+    Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    Name NVARCHAR(100) NOT NULL,
+    Brand NVARCHAR(50) NOT NULL,
+    Weight DECIMAL(5, 2),
+    BladeType NVARCHAR(50),
+    Price MONEY NOT NULL,
+    IsAvailable BIT NOT NULL DEFAULT 1,
+    CategoryId INT NOT NULL,
+    CreatedAt DATETIME2 DEFAULT GETDATE(),
+    OwnedBy UNIQUEIDENTIFIER NULL,
+    
+    CONSTRAINT FK_Rackets_Categories FOREIGN KEY (CategoryId) REFERENCES Categories(Id),
+    CONSTRAINT FK_Rackets_Players FOREIGN KEY (OwnedBy) REFERENCES Players(Id)
+);
+
+CREATE TABLE RacketRubbers (
+    RacketId UNIQUEIDENTIFIER NOT NULL,
+    RubberId UNIQUEIDENTIFIER NOT NULL,
+    IsForehand BIT NOT NULL DEFAULT 1,
+    InstalledAt DATETIME2 DEFAULT GETDATE(),
+    
+    PRIMARY KEY (RacketId, RubberId),
+    CONSTRAINT FK_RacketRubbers_Rackets FOREIGN KEY (RacketId) REFERENCES Rackets(Id) ON DELETE CASCADE,
+    CONSTRAINT FK_RacketRubbers_Rubbers FOREIGN KEY (RubberId) REFERENCES Rubbers(Id) ON DELETE CASCADE
+);
+GO
+
+CREATE UNIQUE INDEX UIX_Categories_Name ON Categories(Name);
+GO
+
+CREATE INDEX IX_Rackets_Brand ON Rackets(Brand);
+GO
